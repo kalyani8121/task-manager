@@ -1,0 +1,45 @@
+
+services:
+  # PostgreSQL Database 
+  postgres:
+    image: postgres:16-alpine
+    container_name: taskmanager-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: taskmanager
+    ports:
+      - "6543:5432"       # host:container — use a free host port if 5432 is busy
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # Persist data between restarts
+      - ./migrations:/docker-entrypoint-initdb.d  # Auto-run migrations on first start
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Go Application 
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: taskmanager-app
+    ports:
+      - "8080:8080"
+    environment:
+      APP_PORT: 8080
+      DB_HOST: postgres       # "postgres" is the service name above — Docker DNS resolves it
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: taskmanager
+      JWT_SECRET: super-secret-change-in-prod
+      JWT_EXPIRY_HOURS: 24
+    depends_on:
+      postgres:
+        condition: service_healthy  # Wait for DB health check before starting app
+    restart: unless-stopped
+
+volumes:
+  postgres_data:  # Named volume — managed by Docker, survives container deletion
