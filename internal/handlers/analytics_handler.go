@@ -72,3 +72,22 @@ func (h *AnalyticsHandler) GetOverdue(c *gin.Context) {
 
 	c.JSON(http.StatusOK, overdue)
 }
+
+// GetPriorityQueue handles GET /api/v1/tasks/priority-queue
+func (h *AnalyticsHandler) GetPriorityQueue(c *gin.Context) {
+	userID := getUserID(c)
+
+	result, err := h.service.GetPriorityQueue(userID)
+	if err != nil {
+		h.logger.Error("Failed to get priority queue",
+			zap.String("userID", userID),
+			zap.Error(err))
+		c.JSON(http.StatusInternalServerError,
+			gin.H{"error": err.Error()})
+		return
+	}
+	h.logger.Info("Priority queue fetched",
+		zap.String("userID", userID),
+		zap.Int("total",result.TotalTasks))
+	c.JSON(http.StatusOK, result)
+}

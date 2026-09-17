@@ -43,6 +43,7 @@ func SetupRoutes(
 			tasks.GET("/:id", taskHandler.GetTask)
 			tasks.PUT("/:id", taskHandler.UpdateTask)
 			tasks.DELETE("/:id", taskHandler.DeleteTask)
+			tasks.GET("/priority-queue", analyticsHandler.GetPriorityQueue)
 		}
 
 		analytics := v1.Group("/analytics")

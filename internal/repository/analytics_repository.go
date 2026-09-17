@@ -12,6 +12,7 @@ type AnalyticsRepository interface {
 	GetSummary(userID string) (*models.AnalyticsSummary, error)
 	GetByStatus(userID string) ([]models.StatusCount, error)
 	GetOverdue(userID string) ([]models.OverdueTask, error)
+	GetPriorityQueue(userID string) ([]models.PriorityTask,error)
 }
 
 type postgresAnalyticsRepository struct {
@@ -144,6 +145,42 @@ func (r *postgresAnalyticsRepository) GetOverdue(userID string) ([]models.Overdu
 	err := r.db.Select(&tasks, query, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get overdue: %w", err)
+	}
+
+	return tasks, nil
+}
+
+// GetPriorityQueue gets tasks ordered by priority and due date
+func (r *postgresAnalyticsRepository) GetPriorityQueue(userID string) ([]models.PriorityTask, error) {
+	var tasks []models.PriorityTask
+
+	query := `
+		SELECT
+			id,
+			title,
+			status::text as status,
+			CASE
+				WHEN due_date IS NULL THEN NULL
+				ELSE TO_CHAR(due_date, 'YYYY-MM-DD')
+			END as due_date,
+			CASE
+				WHEN due_date IS NULL THEN NULL
+				ELSE EXTRACT(DAY FROM due_date - NOW())::int
+			END as days_until_due
+		FROM tasks
+		WHERE user_id = $1
+		AND status NOT IN ('completed', 'cancelled')
+		ORDER BY
+			CASE
+				WHEN due_date IS NULL THEN 2
+				ELSE 1
+			END,
+			due_date ASC
+	`
+
+	err := r.db.Select(&tasks, query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get priority queue: %w", err)
 	}
 
 	return tasks, nil
