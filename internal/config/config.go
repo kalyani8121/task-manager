@@ -22,6 +22,10 @@ type Config struct {
 	DBURL          string
 	JWTSecret      string
 	JWTExpiryHours int
+	SMTPHost       string
+	SMTPPort       string
+	SMTPEmail      string
+	SMTPPassword   string
 }
 
 // LoadConfig reads from .env file(for local dev) and environment variables, then fills the Config struct.
@@ -56,6 +60,10 @@ func LoadConfig() *Config {
 		DBName:         getEnv("DB_NAME", "taskmanager"),
 		JWTSecret:      getEnv("JWT_SECRET", "your-super-secret-key-change-in-production"),
 		JWTExpiryHours: jwtExpiry,
+		SMTPHost:       getEnv("SMTP_HOST", "smtp.gmail.com"),
+		SMTPPort:       getEnv("SMTP_PORT", "587"),
+		SMTPEmail:      getEnv("SMTP_EMAIL", ""),
+		SMTPPassword:   getEnv("SMTP_PASSWORD", ""),
 	}
 
 	// Build the PostgreSQL connection string

@@ -13,6 +13,9 @@ import (
 	"github.com/kalyani8121/task-manager/internal/repository"
 	"github.com/kalyani8121/task-manager/internal/routes"
 	"github.com/kalyani8121/task-manager/internal/service"
+	"github.com/kalyani8121/task-manager/internal/email"
+	"github.com/kalyani8121/task-manager/internal/scheduler"
+
 	_ "github.com/lib/pq"
 )
 
@@ -63,6 +66,17 @@ func main() {
 	taskHandler := handlers.NewTaskHandler(taskService, logger)
 	analyticsHandler := handlers.NewAnalyticsHandler(analyticsService, logger)
 
+	//Setup email sender
+	mailer := email.NewEmailSender(
+		cfg.SMTPHost,
+		cfg.SMTPPort,
+		cfg.SMTPEmail,
+		cfg.SMTPPassword,
+	)
+		// Start email scheduler (runs every day 9AM)
+		emailScheduler := scheduler.NewScheduler(db, mailer)
+	    emailScheduler.Start()
+	
 
 	// Create Gin router
 	router := gin.New()
