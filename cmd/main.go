@@ -68,10 +68,8 @@ func main() {
 
 	//Setup email sender
 	mailer := email.NewEmailSender(
-		cfg.SMTPHost,
-		cfg.SMTPPort,
-		cfg.SMTPEmail,
-		cfg.SMTPPassword,
+		cfg.ResendAPIKey,
+        cfg.SMTPEmail,
 	)
 		// Start email scheduler (runs every day 9AM)
 		emailScheduler := scheduler.NewScheduler(db, mailer)
