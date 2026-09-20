@@ -19,6 +19,17 @@ func NewUserHandler(svc service.UserService, logger *zap.Logger) *UserHandler {
 	return &UserHandler{service: svc, logger: logger}
 }
 
+// Register godoc
+// @Summary      Register a new user
+// @Description  Create a new user account
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body models.RegisterRequest true "Register Request"
+// @Success      201  {object}  models.AuthResponse
+// @Failure      400  {object}  map[string]string
+// @Router       /auth/register [post]
+
 // Register handles POST /api/v1/auth/register
 func (h *UserHandler) Register(c *gin.Context) {
 	var req models.RegisterRequest
@@ -41,6 +52,17 @@ func (h *UserHandler) Register(c *gin.Context) {
 	h.logger.Info("User registered", zap.String("email", req.Email))
 	c.JSON(http.StatusCreated, resp)
 }
+
+// Login godoc
+// @Summary      Login user
+// @Description  Login with email and password to get JWT token
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body models.LoginRequest true "Login Request"
+// @Success      200  {object}  models.AuthResponse
+// @Failure      401  {object}  map[string]string
+// @Router       /auth/login [post]
 
 // Login handles POST /api/v1/auth/login
 func (h *UserHandler) Login(c *gin.Context) {

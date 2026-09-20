@@ -1,0 +1,20 @@
+basePath: /api/v1
+host: task-manager-production-4677.up.railway.app
+info:
+  contact:
+    email: kalyanikuntumalla3@gmail.com
+    name: Kalyani
+  description: Production-style Task Management REST API with JWT authentication,
+    analytics and smart priority queue.
+  license:
+    name: MIT
+  title: Task Management System API
+  version: "1.0"
+paths: {}
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

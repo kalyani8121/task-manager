@@ -25,6 +25,18 @@ func getUserID(c *gin.Context) string {
 	return c.GetString("userID")
 }
 
+// CreateTask godoc
+// @Summary      Create a task
+// @Description  Create a new task for logged in user
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Param        request body models.CreateTaskRequest true "Create Task"
+// @Success      201  {object}  models.Task
+// @Failure      400  {object}  map[string]string
+// @Security     BearerAuth
+// @Router       /tasks [post]
+
 // CreateTask handles POST /api/v1/tasks
 func (h *TaskHandler) CreateTask(c *gin.Context) {
 	userID := getUserID(c)
@@ -46,6 +58,15 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 	c.JSON(http.StatusCreated, task)
 }
 
+// GetTasks godoc
+// @Summary      Get all tasks
+// @Description  Get all tasks for logged in user
+// @Tags         tasks
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Security     BearerAuth
+// @Router       /tasks [get]
+
 // GetTasks handles GET /api/v1/tasks
 func (h *TaskHandler) GetTasks(c *gin.Context) {
 	userID := getUserID(c)
@@ -62,6 +83,17 @@ func (h *TaskHandler) GetTasks(c *gin.Context) {
 	})
 }
 
+// GetTask godoc
+// @Summary      Get one task
+// @Description  Get a specific task by ID
+// @Tags         tasks
+// @Produce      json
+// @Param        id path string true "Task ID"
+// @Success      200  {object}  models.Task
+// @Failure      404  {object}  map[string]string
+// @Security     BearerAuth
+// @Router       /tasks/{id} [get]
+
 // GetTask handles GET /api/v1/tasks/:id
 func (h *TaskHandler) GetTask(c *gin.Context) {
 	userID := getUserID(c)
@@ -75,6 +107,18 @@ func (h *TaskHandler) GetTask(c *gin.Context) {
 
 	c.JSON(http.StatusOK, task)
 }
+
+// UpdateTask godoc
+// @Summary      Update a task
+// @Description  Update task status or details
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "Task ID"
+// @Param        request body models.UpdateTaskRequest true "Update Task"
+// @Success      200  {object}  models.Task
+// @Security     BearerAuth
+// @Router       /tasks/{id} [put]
 
 // UpdateTask handles PUT /api/v1/tasks/:id
 func (h *TaskHandler) UpdateTask(c *gin.Context) {
@@ -96,6 +140,16 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 	h.logger.Info("Task updated", zap.String("taskID", taskID))
 	c.JSON(http.StatusOK, task)
 }
+
+// DeleteTask godoc
+// @Summary      Delete a task
+// @Description  Delete a task by ID
+// @Tags         tasks
+// @Produce      json
+// @Param        id path string true "Task ID"
+// @Success      200  {object}  map[string]string
+// @Security     BearerAuth
+// @Router       /tasks/{id} [delete]
 
 // DeleteTask handles DELETE /api/v1/tasks/:id
 func (h *TaskHandler) DeleteTask(c *gin.Context) {

@@ -18,6 +18,15 @@ func NewAnalyticsHandler(svc service.AnalyticsService, logger *zap.Logger) *Anal
 	return &AnalyticsHandler{service: svc, logger: logger}
 }
 
+// GetSummary godoc
+// @Summary      Get analytics summary
+// @Description  Get overall task statistics
+// @Tags         analytics
+// @Produce      json
+// @Success      200  {object}  models.AnalyticsSummary
+// @Security     BearerAuth
+// @Router       /analytics/summary [get]
+
 // GetSummary handles GET /api/v1/analytics/summary
 func (h *AnalyticsHandler) GetSummary(c *gin.Context) {
 	userID := getUserID(c)
@@ -36,6 +45,15 @@ func (h *AnalyticsHandler) GetSummary(c *gin.Context) {
 		zap.String("userID", userID))
 	c.JSON(http.StatusOK, summary)
 }
+
+// GetByStatus godoc
+// @Summary      Get tasks by status
+// @Description  Get count of tasks grouped by status
+// @Tags         analytics
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Security     BearerAuth
+// @Router       /analytics/by-status [get]
 
 // GetByStatus handles GET /api/v1/analytics/by-status
 func (h *AnalyticsHandler) GetByStatus(c *gin.Context) {
@@ -56,6 +74,15 @@ func (h *AnalyticsHandler) GetByStatus(c *gin.Context) {
 	})
 }
 
+// GetOverdue godoc
+// @Summary      Get overdue tasks
+// @Description  Get all tasks past their due date
+// @Tags         analytics
+// @Produce      json
+// @Success      200  {object}  models.OverdueResponse
+// @Security     BearerAuth
+// @Router       /analytics/overdue [get]
+
 // GetOverdue handles GET /api/v1/analytics/overdue
 func (h *AnalyticsHandler) GetOverdue(c *gin.Context) {
 	userID := getUserID(c)
@@ -72,6 +99,15 @@ func (h *AnalyticsHandler) GetOverdue(c *gin.Context) {
 
 	c.JSON(http.StatusOK, overdue)
 }
+
+// GetPriorityQueue godoc
+// @Summary      Get priority queue
+// @Description  Get tasks ranked by urgency automatically
+// @Tags         analytics
+// @Produce      json
+// @Success      200  {object}  models.PriorityQueueResponse
+// @Security     BearerAuth
+// @Router       /tasks/priority-queue [get]
 
 // GetPriorityQueue handles GET /api/v1/tasks/priority-queue
 func (h *AnalyticsHandler) GetPriorityQueue(c *gin.Context) {
