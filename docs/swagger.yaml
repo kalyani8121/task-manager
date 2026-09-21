@@ -1,4 +1,89 @@
 basePath: /api/v1
+definitions:
+  github_com_kalyani8121_task-manager_internal_models.AuthResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/github_com_kalyani8121_task-manager_internal_models.User'
+    type: object
+  github_com_kalyani8121_task-manager_internal_models.CreateTaskRequest:
+    properties:
+      description:
+        type: string
+      due_date:
+        type: string
+      status:
+        $ref: '#/definitions/github_com_kalyani8121_task-manager_internal_models.TaskStatus'
+      title:
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - title
+    type: object
+  github_com_kalyani8121_task-manager_internal_models.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  github_com_kalyani8121_task-manager_internal_models.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  github_com_kalyani8121_task-manager_internal_models.TaskStatus:
+    enum:
+    - pending
+    - in_progress
+    - completed
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - StatusPending
+    - StatusInProgress
+    - StatusCompleted
+    - StatusCancelled
+  github_com_kalyani8121_task-manager_internal_models.UpdateTaskRequest:
+    properties:
+      description:
+        type: string
+      due_date:
+        type: string
+      status:
+        $ref: '#/definitions/github_com_kalyani8121_task-manager_internal_models.TaskStatus'
+      title:
+        type: string
+    type: object
+  github_com_kalyani8121_task-manager_internal_models.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
 host: task-manager-production-4677.up.railway.app
 info:
   contact:
@@ -10,7 +95,240 @@ info:
     name: MIT
   title: Task Management System API
   version: "1.0"
-paths: {}
+paths:
+  /analytics/by-status:
+    get:
+      description: Get count of tasks grouped by status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get tasks by status
+      tags:
+      - analytics
+  /analytics/overdue:
+    get:
+      description: Get all tasks past their due date
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get overdue tasks
+      tags:
+      - analytics
+  /analytics/summary:
+    get:
+      description: Get overall task statistics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get analytics summary
+      tags:
+      - analytics
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login with email and password to get JWT token
+      parameters:
+      - description: Login Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kalyani8121_task-manager_internal_models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kalyani8121_task-manager_internal_models.AuthResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login user
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account
+      parameters:
+      - description: Register Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kalyani8121_task-manager_internal_models.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kalyani8121_task-manager_internal_models.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - auth
+  /tasks:
+    get:
+      description: Get all tasks for logged in user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all tasks
+      tags:
+      - tasks
+    post:
+      consumes:
+      - application/json
+      description: Create a new task for logged in user
+      parameters:
+      - description: Create Task
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kalyani8121_task-manager_internal_models.CreateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a task
+      tags:
+      - tasks
+  /tasks/{id}:
+    delete:
+      description: Delete a task by ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a task
+      tags:
+      - tasks
+    get:
+      description: Get a specific task by ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get one task
+      tags:
+      - tasks
+    put:
+      consumes:
+      - application/json
+      description: Update task status or details
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update Task
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kalyani8121_task-manager_internal_models.UpdateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a task
+      tags:
+      - tasks
+  /tasks/priority-queue:
+    get:
+      description: Get tasks ranked by urgency automatically
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get priority queue
+      tags:
+      - analytics
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and JWT token.

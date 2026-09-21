@@ -29,8 +29,6 @@ func NewUserHandler(svc service.UserService, logger *zap.Logger) *UserHandler {
 // @Success      201  {object}  models.AuthResponse
 // @Failure      400  {object}  map[string]string
 // @Router       /auth/register [post]
-
-// Register handles POST /api/v1/auth/register
 func (h *UserHandler) Register(c *gin.Context) {
 	var req models.RegisterRequest
 
@@ -63,8 +61,6 @@ func (h *UserHandler) Register(c *gin.Context) {
 // @Success      200  {object}  models.AuthResponse
 // @Failure      401  {object}  map[string]string
 // @Router       /auth/login [post]
-
-// Login handles POST /api/v1/auth/login
 func (h *UserHandler) Login(c *gin.Context) {
 	var req models.LoginRequest
 

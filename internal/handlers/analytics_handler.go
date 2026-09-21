@@ -23,11 +23,9 @@ func NewAnalyticsHandler(svc service.AnalyticsService, logger *zap.Logger) *Anal
 // @Description  Get overall task statistics
 // @Tags         analytics
 // @Produce      json
-// @Success      200  {object}  models.AnalyticsSummary
+// @Success      200  {object}  map[string]interface{}
 // @Security     BearerAuth
 // @Router       /analytics/summary [get]
-
-// GetSummary handles GET /api/v1/analytics/summary
 func (h *AnalyticsHandler) GetSummary(c *gin.Context) {
 	userID := getUserID(c)
 
@@ -54,8 +52,6 @@ func (h *AnalyticsHandler) GetSummary(c *gin.Context) {
 // @Success      200  {object}  map[string]interface{}
 // @Security     BearerAuth
 // @Router       /analytics/by-status [get]
-
-// GetByStatus handles GET /api/v1/analytics/by-status
 func (h *AnalyticsHandler) GetByStatus(c *gin.Context) {
 	userID := getUserID(c)
 
@@ -79,11 +75,9 @@ func (h *AnalyticsHandler) GetByStatus(c *gin.Context) {
 // @Description  Get all tasks past their due date
 // @Tags         analytics
 // @Produce      json
-// @Success      200  {object}  models.OverdueResponse
+// @Success      200  {object}  map[string]interface{}
 // @Security     BearerAuth
 // @Router       /analytics/overdue [get]
-
-// GetOverdue handles GET /api/v1/analytics/overdue
 func (h *AnalyticsHandler) GetOverdue(c *gin.Context) {
 	userID := getUserID(c)
 
@@ -105,11 +99,9 @@ func (h *AnalyticsHandler) GetOverdue(c *gin.Context) {
 // @Description  Get tasks ranked by urgency automatically
 // @Tags         analytics
 // @Produce      json
-// @Success      200  {object}  models.PriorityQueueResponse
+// @Success      200  {object}  map[string]interface{}
 // @Security     BearerAuth
 // @Router       /tasks/priority-queue [get]
-
-// GetPriorityQueue handles GET /api/v1/tasks/priority-queue
 func (h *AnalyticsHandler) GetPriorityQueue(c *gin.Context) {
 	userID := getUserID(c)
 

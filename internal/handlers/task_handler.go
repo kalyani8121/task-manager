@@ -32,12 +32,9 @@ func getUserID(c *gin.Context) string {
 // @Accept       json
 // @Produce      json
 // @Param        request body models.CreateTaskRequest true "Create Task"
-// @Success      201  {object}  models.Task
-// @Failure      400  {object}  map[string]string
+// @Success      201  {object}  map[string]interface{}
 // @Security     BearerAuth
 // @Router       /tasks [post]
-
-// CreateTask handles POST /api/v1/tasks
 func (h *TaskHandler) CreateTask(c *gin.Context) {
 	userID := getUserID(c)
 	var req models.CreateTaskRequest
@@ -66,8 +63,6 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 // @Success      200  {object}  map[string]interface{}
 // @Security     BearerAuth
 // @Router       /tasks [get]
-
-// GetTasks handles GET /api/v1/tasks
 func (h *TaskHandler) GetTasks(c *gin.Context) {
 	userID := getUserID(c)
 
@@ -89,12 +84,9 @@ func (h *TaskHandler) GetTasks(c *gin.Context) {
 // @Tags         tasks
 // @Produce      json
 // @Param        id path string true "Task ID"
-// @Success      200  {object}  models.Task
-// @Failure      404  {object}  map[string]string
+// @Success      200  {object}  map[string]interface{}
 // @Security     BearerAuth
 // @Router       /tasks/{id} [get]
-
-// GetTask handles GET /api/v1/tasks/:id
 func (h *TaskHandler) GetTask(c *gin.Context) {
 	userID := getUserID(c)
 	taskID := c.Param("id") // Reads :id from the URL
@@ -116,11 +108,9 @@ func (h *TaskHandler) GetTask(c *gin.Context) {
 // @Produce      json
 // @Param        id path string true "Task ID"
 // @Param        request body models.UpdateTaskRequest true "Update Task"
-// @Success      200  {object}  models.Task
+// @Success      200  {object}  map[string]interface{}
 // @Security     BearerAuth
 // @Router       /tasks/{id} [put]
-
-// UpdateTask handles PUT /api/v1/tasks/:id
 func (h *TaskHandler) UpdateTask(c *gin.Context) {
 	userID := getUserID(c)
 	taskID := c.Param("id")
@@ -150,8 +140,6 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 // @Success      200  {object}  map[string]string
 // @Security     BearerAuth
 // @Router       /tasks/{id} [delete]
-
-// DeleteTask handles DELETE /api/v1/tasks/:id
 func (h *TaskHandler) DeleteTask(c *gin.Context) {
 	userID := getUserID(c)
 	taskID := c.Param("id")
