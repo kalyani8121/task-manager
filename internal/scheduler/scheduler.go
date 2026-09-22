@@ -35,17 +35,25 @@ func (s *Scheduler) run() {
 	for {
 		now := time.Now()
 
-		// Calculate time until next 9AM
+		// Load IST timezone
+		ist, err := time.LoadLocation("Asia/Kolkata")
+		if err != nil {
+			ist = time.UTC
+		}
+		// Get current time in IST
+		nowIST := now.In(ist)
+
+		// Schedule 9AM IST
 		next9AM := time.Date(
-			now.Year(),
-			now.Month(),
-			now.Day(),
+			nowIST.Year(),
+			nowIST.Month(),
+			nowIST.Day(),
 			9, 0, 0, 0,
-			now.Location(),
+			ist,
 		)
 
 		// If 9AM already passed today → schedule for tomorrow
-		if now.After(next9AM) {
+		if nowIST.After(next9AM) {
 			next9AM = next9AM.Add(24 * time.Hour)
 		}
 
