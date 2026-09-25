@@ -102,8 +102,7 @@ func main() {
 		AllowOrigins: []string{
 			"http://localhost:5173",
 			"http://localhost:3000",
-			"https://task-manager-kalyani.vercel.app",
-			"*",
+			"https://task-manager-frontend-indol-xi.vercel.app",
 		},
 		AllowMethods: []string{
 			"GET", "POST", "PUT", "DELETE", "OPTIONS",
