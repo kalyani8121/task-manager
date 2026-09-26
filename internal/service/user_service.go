@@ -31,7 +31,53 @@ func NewUserService(repo repository.UserRepository, jwtSecret string, jwtExpiry 
 	}
 }
 
+func isValidPassword(password string) error {
+	var (
+		hasUpper   bool
+		hasLower   bool
+		hasNumber  bool
+		hasSpecial bool
+	)
+
+	for _, char := range password {
+		switch {
+		case char >= 'A' && char <= 'Z':
+			hasUpper = true
+		case char >= 'a' && char <= 'z':
+			hasLower = true
+		case char >= '0' && char <= '9':
+			hasNumber = true
+		case char == '!' || char == '@' ||
+			char == '#' || char == '$' ||
+			char == '%' || char == '^' ||
+			char == '&' || char == '*':
+			hasSpecial = true
+		}
+	}
+
+	if len(password) < 8 {
+		return errors.New("password must be at least 8 characters")
+	}
+	if !hasUpper {
+		return errors.New("password must have at least 1 uppercase letter")
+	}
+	if !hasLower {
+		return errors.New("password must have at least 1 lowercase letter")
+	}
+	if !hasNumber {
+		return errors.New("password must have at least 1 number")
+	}
+	if !hasSpecial {
+		return errors.New("password must have at least 1 special character (!@#$%^&*)")
+	}
+	return nil
+}
+
 func (s *userService) Register(req *models.RegisterRequest) (*models.AuthResponse, error) {
+	// Validate password strength
+	if err := isValidPassword(req.Password); err != nil {
+		return nil, err
+	}
 	// Check if email already exists
 	existing, err := s.repo.FindByEmail(req.Email)
 	if err != nil {
