@@ -51,6 +51,36 @@ func (h *UserHandler) Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, resp)
 }
 
+// VerifyEmail godoc
+// @Summary      Verify email
+// @Description  Verify user email with token
+// @Tags         auth
+// @Param        token query string true "Verification Token"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Router       /auth/verify [get]
+func (h *UserHandler) VerifyEmail(c *gin.Context) {
+	token := c.Query("token")
+	if token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "verification token is required",
+		})
+		return
+	}
+
+	if err := h.service.VerifyEmail(token); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// Redirect to frontend with success message
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Email verified successfully! You can now login.",
+	})
+}
+
 // Login godoc
 // @Summary      Login user
 // @Description  Login with email and password to get JWT token

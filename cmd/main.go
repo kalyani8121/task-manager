@@ -38,10 +38,10 @@ import (
 )
 
 func main() {
-	// 1. Load configuration
+	// Load configuration
 	cfg := config.LoadConfig()
 
-	// 2. Initialize structured logger
+	// Initialize structured logger
 	// In production, use zap.NewProduction() for JSON logs (Kibana-friendly)
 	// In development, use zap.NewDevelopment() for human-readable logs
 	logger, err := zap.NewDevelopment()
@@ -50,7 +50,7 @@ func main() {
 	}
 	defer logger.Sync() // Flushes buffered log entries
 
-	// 3. Connect to database
+	// Connect to database
 	var db *sqlx.DB
 	var connectErr error
 	for i := 0; i < 10; i++ {
@@ -68,14 +68,19 @@ func main() {
 	}
 	defer db.Close()
 
-	// 4. Wire up the layers (Dependency Injection)
+	// Wire up the layers (Dependency Injection)
 	// Repository → Service → Handler
 	// Each layer only knows about the layer below it (via interfaces).
 	userRepo := repository.NewUserRepository(db)
 	taskRepo := repository.NewTaskRepository(db)
 	analyticsRepo := repository.NewAnalyticsRepository(db)
+	//Setup email sender
+	mailer := email.NewEmailSender(
+		cfg.ResendAPIKey,
+		cfg.SMTPEmail,
+	)
 
-	userService := service.NewUserService(userRepo, cfg.JWTSecret, cfg.JWTExpiryHours)
+	userService := service.NewUserService(userRepo, cfg.JWTSecret, cfg.JWTExpiryHours, mailer, cfg.AppURL)
 	taskService := service.NewTaskService(taskRepo)
 	analyticsService := service.NewAnalyticsService(analyticsRepo)
 
@@ -83,11 +88,6 @@ func main() {
 	taskHandler := handlers.NewTaskHandler(taskService, logger)
 	analyticsHandler := handlers.NewAnalyticsHandler(analyticsService, logger)
 
-	//Setup email sender
-	mailer := email.NewEmailSender(
-		cfg.ResendAPIKey,
-		cfg.SMTPEmail,
-	)
 	// Start email scheduler (runs every day 9AM)
 	emailScheduler := scheduler.NewScheduler(db, mailer)
 	emailScheduler.Start()
@@ -113,10 +113,10 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	// 6. Register routes
+	// Register routes
 	routes.SetupRoutes(router, userHandler, taskHandler, analyticsHandler, cfg.JWTSecret, logger)
 
-	// 7. Start server
+	// Start server
 	logger.Info("Server starting", zap.String("port", cfg.AppPort))
 	if err := router.Run(":" + cfg.AppPort); err != nil {
 		logger.Fatal("Server failed to start", zap.Error(err))

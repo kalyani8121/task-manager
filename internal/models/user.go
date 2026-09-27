@@ -4,12 +4,14 @@ import "time"
 
 // User maps to the `users` table in PostgreSQL.
 type User struct {
-	ID        string    `db:"id"         json:"id"`
-	Name      string    `db:"name"       json:"name"`
-	Email     string    `db:"email"      json:"email"`
-	Password  string    `db:"password"   json:"-"` // "-" means NEVER send password in JSON
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+	ID                string    `db:"id"         json:"id"`
+	Name              string    `db:"name"       json:"name"`
+	Email             string    `db:"email"      json:"email"`
+	Password          string    `db:"password"   json:"-"` // "-" means NEVER send password in JSON
+	CreatedAt         time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt         time.Time `db:"updated_at" json:"updated_at"`
+	IsVerified        bool      `db:"is_verified" json:"is_verified"`
+	VerificationToken string    `db:"verification_token" json:"-"`
 }
 
 // RegisterRequest is what the client sends when registering.

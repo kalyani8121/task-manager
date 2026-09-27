@@ -1,6 +1,8 @@
 package service
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
@@ -8,6 +10,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/kalyani8121/task-manager/internal/email"
 	"github.com/kalyani8121/task-manager/internal/models"
 	"github.com/kalyani8121/task-manager/internal/repository"
 )
@@ -15,19 +18,30 @@ import (
 type UserService interface {
 	Register(req *models.RegisterRequest) (*models.AuthResponse, error)
 	Login(req *models.LoginRequest) (*models.AuthResponse, error)
+	VerifyEmail(token string) error
 }
 
 type userService struct {
 	repo      repository.UserRepository
 	jwtSecret string
 	jwtExpiry int
+	mailer    *email.EmailSender
+	appURL    string
 }
 
-func NewUserService(repo repository.UserRepository, jwtSecret string, jwtExpiry int) UserService {
+func NewUserService(
+	repo repository.UserRepository,
+	jwtSecret string,
+	jwtExpiry int,
+	mailer *email.EmailSender,
+	appURL string,
+) UserService {
 	return &userService{
 		repo:      repo,
 		jwtSecret: jwtSecret,
 		jwtExpiry: jwtExpiry,
+		mailer:    mailer,
+		appURL:    appURL,
 	}
 }
 
@@ -73,43 +87,86 @@ func isValidPassword(password string) error {
 	return nil
 }
 
+func generateToken() string {
+	bytes := make([]byte, 32)
+	rand.Read(bytes)
+	return hex.EncodeToString(bytes)
+}
+
 func (s *userService) Register(req *models.RegisterRequest) (*models.AuthResponse, error) {
 	// Validate password strength
 	if err := isValidPassword(req.Password); err != nil {
 		return nil, err
 	}
+
 	// Check if email already exists
 	existing, err := s.repo.FindByEmail(req.Email)
 	if err != nil {
 		return nil, fmt.Errorf("checking existing user: %w", err)
 	}
+
 	if existing != nil {
 		return nil, errors.New("email already registered")
 	}
 
-	// Hash the password — NEVER store plain text passwords.
+	// Hash password
 	hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password), 12)
 	if err != nil {
 		return nil, fmt.Errorf("hashing password: %w", err)
 	}
 
-	// Create user in DB
+	// Generate verification token
+	verificationToken := generateToken()
+
+	// Create user as NOT verified
 	user := &models.User{
-		Name:     req.Name,
-		Email:    req.Email,
-		Password: string(hashed),
+		Name:              req.Name,
+		Email:             req.Email,
+		Password:          string(hashed),
+		IsVerified:        false,
+		VerificationToken: verificationToken,
 	}
+
 	if err := s.repo.Create(user); err != nil {
 		return nil, fmt.Errorf("creating user: %w", err)
 	}
 
-	// Generate JWT token
-	token, err := s.generateToken(user.ID)
+	// Send verification email
+	verifyURL := fmt.Sprintf(
+		"%s/api/v1/auth/verify?token=%s",
+		s.appURL,
+		verificationToken,
+	)
+
+	err = s.mailer.SendVerificationEmail(
+		user.Email,
+		user.Name,
+		verifyURL,
+	)
+
 	if err != nil {
-		return nil, fmt.Errorf("generating token: %w", err)
+		return nil, fmt.Errorf("sending verification email: %w", err)
 	}
 
-	return &models.AuthResponse{Token: token, User: *user}, nil
+	// User must verify email before logging in
+	return nil, nil
+}
+
+func (s *userService) VerifyEmail(token string) error {
+	user, err := s.repo.FindByVerificationToken(token)
+	if err != nil {
+		return fmt.Errorf("finding token: %w", err)
+	}
+
+	if user == nil {
+		return errors.New("invalid or expired verification token")
+	}
+
+	if user.IsVerified {
+		return errors.New("email already verified")
+	}
+
+	return s.repo.MarkAsVerified(user.ID)
 }
 
 func (s *userService) Login(req *models.LoginRequest) (*models.AuthResponse, error) {
@@ -122,6 +179,11 @@ func (s *userService) Login(req *models.LoginRequest) (*models.AuthResponse, err
 	// Use a generic error — don't tell attackers which field is wrong.
 	if user == nil {
 		return nil, errors.New("invalid credentials")
+	}
+
+	// Check if email is verified
+	if !user.IsVerified {
+		return nil, errors.New("please verify your email before logging in")
 	}
 
 	// Compare hashed password

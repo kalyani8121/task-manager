@@ -34,6 +34,26 @@ type resendRequest struct {
 	Text    string   `json:"text"`
 }
 
+func (s *EmailSender) SendVerificationEmail(
+	toEmail string,
+	userName string,
+	verifyURL string,
+) error {
+	subject := "Verify your Task Manager email"
+	body := fmt.Sprintf(
+		"Hi %s!\n\n"+
+			"Welcome to Task Manager!\n\n"+
+			"Please verify your email by clicking this link:\n\n"+
+			"%s\n\n"+
+			"This link expires in 24 hours.\n\n"+
+			"If you didn't register, ignore this email.\n\n"+
+			"- Task Manager Team",
+		userName,
+		verifyURL,
+	)
+	return s.sendEmail(toEmail, subject, body)
+}
+
 func (s *EmailSender) SendPriorityQueueEmail(
 	toEmail string,
 	userName string,

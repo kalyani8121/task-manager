@@ -27,6 +27,7 @@ type Config struct {
 	SMTPEmail      string
 	SMTPPassword   string
 	ResendAPIKey   string
+	AppURL         string
 }
 
 // LoadConfig reads from .env file(for local dev) and environment variables, then fills the Config struct.
@@ -65,7 +66,8 @@ func LoadConfig() *Config {
 		SMTPPort:       getEnv("SMTP_PORT", "587"),
 		SMTPEmail:      getEnv("SMTP_EMAIL", ""),
 		SMTPPassword:   getEnv("SMTP_PASSWORD", ""),
-		ResendAPIKey: getEnv("RESEND_API_KEY", ""),
+		ResendAPIKey:   getEnv("RESEND_API_KEY", ""),
+		AppURL:         getEnv("APP_URL", "https://task-manager-production-4677.up.railway.app"),
 	}
 
 	// Build the PostgreSQL connection string

@@ -8,7 +8,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
 
-	_"github.com/kalyani8121/task-manager/docs"
+	_ "github.com/kalyani8121/task-manager/docs"
 	"github.com/kalyani8121/task-manager/internal/handlers"
 	"github.com/kalyani8121/task-manager/internal/middleware"
 )
@@ -27,10 +27,10 @@ func SetupRoutes(
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
-	// Swagger UI 
+	// Swagger UI
 	router.GET("/swagger/*any",
 		ginSwagger.WrapHandler(swaggerFiles.Handler))
-		
+
 	// API versioning
 	v1 := router.Group("/api/v1")
 	{
@@ -39,6 +39,7 @@ func SetupRoutes(
 		{
 			auth.POST("/register", userHandler.Register)
 			auth.POST("/login", userHandler.Login)
+			auth.GET("/verify", userHandler.VerifyEmail)
 		}
 
 		// Protected routes — JWT middleware runs first

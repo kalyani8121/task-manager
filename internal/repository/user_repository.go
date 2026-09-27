@@ -14,6 +14,8 @@ type UserRepository interface {
 	Create(user *models.User) error
 	FindByEmail(email string) (*models.User, error)
 	FindByID(id string) (*models.User, error)
+	FindByVerificationToken(token string) (*models.User, error)
+	MarkAsVerified(id string) error
 }
 
 // postgresUserRepository is the concrete implementation using PostgreSQL.
@@ -29,8 +31,8 @@ func NewUserRepository(db *sqlx.DB) UserRepository {
 // Create inserts a new user into the database.
 func (r *postgresUserRepository) Create(user *models.User) error {
 	query := `
-		INSERT INTO users (name, email, password)
-		VALUES (:name, :email, :password)
+		INSERT INTO users (name, email, password, is_verified, verification_token)
+		VALUES (:name, :email, :password, :is_verified, :verification_token)
 		RETURNING id, created_at, updated_at
 	`
 	// NamedQuery uses struct field names (via db tags) as SQL parameters.
@@ -76,4 +78,34 @@ func (r *postgresUserRepository) FindByID(id string) (*models.User, error) {
 		return nil, fmt.Errorf("find user by id: %w", err)
 	}
 	return &user, nil
+}
+
+func (r *postgresUserRepository) FindByVerificationToken(token string) (*models.User, error) {
+	var user models.User
+	query := `SELECT id, name, email, password, 
+			  is_verified, verification_token,
+			  created_at, updated_at
+              FROM users WHERE verification_token = $1`
+
+	err := r.db.Get(&user, query, token)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("find by token: %w", err)
+	}
+	return &user, nil
+}
+
+func (r *postgresUserRepository) MarkAsVerified(id string) error {
+	query := `UPDATE users 
+			  SET is_verified = TRUE, 
+			      verification_token = NULL,
+			      updated_at = NOW()
+			  WHERE id = $1`
+	_, err := r.db.Exec(query, id)
+	if err != nil {
+		return fmt.Errorf("mark verified: %w", err)
+	}
+	return nil
 }
